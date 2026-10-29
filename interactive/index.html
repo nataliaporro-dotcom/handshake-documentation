@@ -1,0 +1,1785 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Corporate Handshake · Flow 1 · Interactive</title>
+<style>
+:root{
+  --bg:#f3f4f6; --surface:#fff; --border:#d8dde3; --text:#222831; --muted:#6b7280;
+  --nav:#2f3339; --sidebar:#f6f7f9; --primary:#11161c; --accent:#22c7c9;
+  --danger:#c62828; --success:#137333; --pending-bg:#fff4d6; --pending:#8a5b00;
+  --disabled:#c7ccd3;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)}
+.navbar{position:fixed;inset:0 0 auto 0;height:36px;background:#23252b;color:#fff;display:flex;align-items:center;padding:0 10px;z-index:50;font-size:10px;font-weight:700;border-bottom:1px solid #3a3d44}
+.canary-brand{display:flex;align-items:center;gap:7px;min-width:255px;color:#fff;font-size:22px;font-weight:700;letter-spacing:.01em}
+.canary-brand-mark{font-size:21px;line-height:1}
+.canary-brand-name{font-size:20px;line-height:1}
+.canary-global-search{position:absolute;left:50%;transform:translateX(-50%);width:min(760px,52vw);height:25px;background:#fff;border-radius:3px;display:flex;align-items:center;padding:0 10px;color:#454b54;font-size:11px;font-weight:400}
+.canary-search-icon{font-size:13px;margin-right:10px;color:#20262e}
+.canary-search-placeholder{color:#7b828b}
+.navbar .spacer{flex:1}
+.avatar{width:23px;height:23px;border-radius:50%;background:#69717d;display:grid;place-items:center;margin-left:7px;font-size:9px;color:#fff}
+.sidebar{position:fixed;left:0;top:36px;bottom:0;width:33px;background:#23252b;border-right:1px solid #383b42;padding-top:6px;z-index:45}
+.side-item{height:31px;display:grid;place-items:center;font-size:12px;color:#fff;border-left:2px solid transparent}
+.side-item.active{background:#34373d;border-left-color:#fff}
+
+.navbar.destination-corporate{
+  background:#748983;
+  border-bottom-color:#7e928d;
+}
+.sidebar.destination-corporate{
+  background:#748983;
+  border-right-color:#7e928d;
+}
+.sidebar.destination-corporate .side-item.active{
+  background:#7d908b;
+  border-left-color:#fff;
+}
+.side-separator{height:16px;border-top:1px solid #7a7f87;margin:6px 4px 0}
+.main{margin-left:33px;padding-top:36px;min-height:100vh}
+.content{padding:18px 24px 42px}
+.breadcrumb{font-size:11px;color:#7a8490;margin-bottom:12px}
+.page-title{font-size:18px;font-weight:600;margin:0 0 14px}
+
+.context{font-size:12px;color:#434c56;margin:10px 0 14px}
+.section-header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:4px 0 10px}
+.section-title{font-size:15px;font-weight:600}
+.toolbar{display:flex;align-items:center;gap:8px}
+.search-label{font-size:11px;color:#505a66}
+.search{height:30px;width:225px;border:1px solid #cfd5dc;background:#fff;border-radius:2px;padding:0 9px;font:inherit;font-size:12px}
+button{font:inherit;height:30px;padding:0 12px;border-radius:2px;cursor:pointer}
+.btn-primary{border:1px solid #11161c;background:var(--primary);color:#fff;font-size:12px}
+.btn-primary:disabled{background:var(--disabled);border-color:var(--disabled);color:#f7f7f7;cursor:not-allowed}
+.btn-secondary{background:#fff;color:var(--text);border:1px solid #cfd5dc;font-size:12px}
+.icon-square{width:30px;height:30px;border:1px solid #cfd5dc;background:#fff;border-radius:2px;display:grid;place-items:center;color:#4b5563}
+.list{display:flex;flex-direction:column;gap:8px}
+.list-item{background:#fff;border:1px solid var(--border);border-radius:2px;padding:10px 12px;display:grid;grid-template-columns:1.15fr .95fr 1.35fr .9fr .9fr auto;gap:18px;align-items:center;min-height:70px}
+.meta-label{display:block;font-size:9px;letter-spacing:.05em;color:#6f7883;text-transform:uppercase;margin-bottom:4px}
+.meta-value{font-size:12px;color:#20262e}
+.meta-sub{font-size:10px;color:#66717f;margin-top:2px}
+.badge{display:inline-flex;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:600}
+.badge-pending{background:var(--pending-bg);color:var(--pending)}
+.actions{display:flex;align-items:center;justify-content:flex-end;justify-self:end;gap:10px;white-space:nowrap}
+.link-action{font-size:11px;color:#374151;text-decoration:none}
+.empty{background:#fff;border:1px solid var(--border);padding:48px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:#303741;font-size:13px;margin-bottom:5px}
+
+.backdrop{position:fixed;inset:0;background:rgba(19,25,32,.48);display:none;align-items:center;justify-content:center;padding:24px;z-index:100}
+.backdrop.show{display:flex}
+.modal{width:min(620px,calc(100vw - 48px));background:#fff;border-radius:3px;box-shadow:0 18px 50px rgba(0,0,0,.22);overflow:hidden}
+.modal-header,.modal-footer{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-footer{border-top:1px solid var(--border);border-bottom:0;justify-content:flex-end;gap:8px}
+.modal-body{padding:16px}
+.modal-header h2{margin:0;font-size:15px}
+.icon-btn{border:0;background:transparent;font-size:20px;height:28px;width:28px;padding:0}
+.field{margin-bottom:15px}
+.field label{display:block;font-size:11px;font-weight:600;margin-bottom:6px}
+.required:after{content:" *";color:var(--danger)}
+.combo{position:relative}
+.combo-input{
+  width:100%;height:32px;border:1px solid #cfd5dc;border-radius:2px;background:#fff;
+  padding:0 64px 0 9px;font:inherit;font-size:12px;outline:none;
+}
+.combo-input.error{border-color:var(--danger)}
+.combo-icons{position:absolute;right:8px;top:0;height:32px;display:flex;align-items:center;gap:8px;color:#616b76;font-size:12px}
+.combo-panel{
+  display:none;position:absolute;left:0;right:0;top:34px;background:#fff;border:1px solid var(--border);
+  box-shadow:0 12px 30px rgba(0,0,0,.10);z-index:4;max-height:190px;overflow:auto
+}
+.combo.open .combo-panel{display:block}
+.option{padding:8px 10px;border-bottom:1px solid #edf0f3;cursor:pointer;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.option:last-child{border-bottom:none}
+.option:hover{background:#f7f8fa}
+.option-main{min-width:0}
+.option-title{font-size:12px;color:#212833}
+.option-sub{font-size:10px;color:#66717f;margin-top:2px}
+
+
+.error-text{margin-top:5px;color:var(--danger);font-size:11px;min-height:14px}
+.helper-text{margin-top:5px;color:#6f7883;font-size:10px}
+textarea{width:100%;border:1px solid #cfd5dc;border-radius:2px;background:#fff;padding:8px 9px;font:inherit;font-size:12px;min-height:82px;resize:vertical}
+.toast{position:fixed;top:48px;right:18px;min-width:300px;max-width:420px;background:#fff;border:1px solid var(--border);border-radius:3px;box-shadow:0 12px 30px rgba(0,0,0,.18);padding:11px 12px;display:none;z-index:120}
+.toast.show{display:block}
+.toast.success{border-left:3px solid var(--success)}
+.toast.error{border-left:3px solid var(--danger)}
+.toast-title{font-size:12px;font-weight:700;margin-bottom:3px}
+.toast-msg{font-size:11px;color:var(--muted)}
+
+.pagination{
+  display:flex;align-items:center;justify-content:flex-start;gap:6px;
+  margin-top:10px;font-size:10px;color:#4b5563;
+}
+.page-btn{
+  width:26px;height:26px;padding:0;border:1px solid #cfd5dc;background:#fff;color:#374151;
+  border-radius:2px;font-size:10px;display:grid;place-items:center;
+}
+.page-btn.active{background:#4f5c72;color:#fff;border-color:#4f5c72}
+.page-btn:disabled{opacity:.45;cursor:not-allowed}
+.page-info{margin-left:4px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px}
+.detail-cell{min-width:0}
+.detail-label{display:block;font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:#737d88;margin-bottom:4px}
+.detail-value{font-size:12px;color:#20262e}
+.detail-full{grid-column:1/-1}
+.detail-actions{display:flex;gap:10px;align-items:center}
+.action-link{height:auto;padding:0;border:0;background:transparent;font-size:11px;color:#3b4450;text-decoration:underline}
+.action-link.danger{color:#b42318}
+
+@media(max-width:1100px){.list-item{grid-template-columns:1fr 1fr 1fr}.actions{grid-column:1/-1;justify-content:flex-end}}
+
+.overflow-wrap{position:relative}
+.overflow-btn{
+  min-width:30px;height:28px;padding:0 8px;border:1px solid #cfd5dc;background:#fff;
+  color:#374151;border-radius:3px;font-size:14px;line-height:1;cursor:pointer;
+}
+.overflow-menu{
+  display:none;position:absolute;left:0;bottom:34px;min-width:150px;background:#fff;
+  border:1px solid #d9dee5;border-radius:4px;box-shadow:0 6px 18px rgba(0,0,0,.12);
+  padding:4px;z-index:20;
+}
+.overflow-menu.show,.overflow-menu.static-open{display:block}
+.overflow-item{
+  width:100%;border:0;background:transparent;text-align:left;padding:8px 10px;
+  font-size:11px;color:#26313c;border-radius:3px;cursor:pointer;
+}
+.overflow-item:hover{background:#f3f5f7}
+
+
+.combo-input{padding-right:34px}
+.combo-icons{display:none!important}
+.combo-arrow-btn{
+  position:absolute;right:0;top:0;width:34px;height:32px;
+  border:0;background:transparent;padding:0;cursor:pointer;
+}
+.combo-arrow-btn::before{
+  content:"";position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-35%);
+  width:0;height:0;
+  border-left:4px solid transparent;
+  border-right:4px solid transparent;
+  border-top:5px solid #5f6b77;
+}
+.combo-arrow-btn:hover{background:#f6f7f9}
+
+
+.badge-approved{background:#dff5e7;color:#176b3a;border:1px solid #bfe6ce}
+.badge-cancelled{background:#fde3e3;color:#9c1c1c;border:1px solid #f4bcbc}
+.date-input{width:100%;height:32px;border:1px solid #cfd5dc;border-radius:2px;padding:0 10px;font:inherit;color:#26313c;background:#fff}
+.confirm-copy{font-size:12px;line-height:1.5;color:#3f4a55;margin:0}
+.warning-copy{font-size:11px;line-height:1.45;color:#68737e;margin-top:8px}
+.destination-primary{display:flex;gap:8px;margin-left:auto}
+
+
+.tabs{
+  display:flex;
+  align-items:flex-end;
+  gap:0;
+  border-bottom:1px solid #d7dce2;
+  margin-bottom:14px;
+}
+.tab{
+  appearance:none;
+  border:0;
+  background:transparent;
+  padding:10px 14px 9px;
+  margin:0;
+  font:inherit;
+  font-size:11px;
+  color:#4b5563;
+  cursor:pointer;
+  border-bottom:2px solid transparent;
+  border-radius:0;
+}
+.tab.active{
+  color:#1f2933;
+  font-weight:600;
+  border-bottom-color:#1fc7c9;
+}
+.tab:hover{
+  background:transparent;
+  color:#1f2933;
+}
+
+
+.platform-search{
+  position:relative;
+  width:280px;
+  height:32px;
+}
+.platform-search input{
+  width:100%;
+  height:32px;
+  box-sizing:border-box;
+  border:1px solid #cfd5dc;
+  border-radius:4px;
+  background:#fff;
+  padding:0 10px 0 34px;
+  font:inherit;
+  font-size:11px;
+  color:#26313c;
+  outline:none;
+}
+.platform-search input::placeholder{color:#5f6b77}
+.platform-search input:focus{
+  border-color:#9aa5b1;
+  box-shadow:0 0 0 1px rgba(154,165,177,.15);
+}
+.platform-search::before{
+  content:"";
+  position:absolute;
+  left:11px;
+  top:50%;
+  width:10px;
+  height:10px;
+  border:1.6px solid #374151;
+  border-radius:50%;
+  transform:translateY(-58%);
+  pointer-events:none;
+}
+.platform-search::after{
+  content:"";
+  position:absolute;
+  left:20px;
+  top:18px;
+  width:5px;
+  height:1.6px;
+  background:#374151;
+  transform:rotate(45deg);
+  transform-origin:left center;
+  pointer-events:none;
+}
+
+.search-filter-component{
+  position:relative;
+}
+.search-filter-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.filter-toggle{
+  width:32px;
+  height:32px;
+  border:1px solid #252b32;
+  border-radius:3px;
+  background:#252b32;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  cursor:pointer;
+}
+.filter-toggle:hover{background:#1c2127}
+.filter-funnel{
+  width:14px;
+  height:14px;
+  position:relative;
+  display:block;
+}
+.filter-funnel::before{
+  content:"";
+  position:absolute;
+  left:1px;
+  top:1px;
+  width:12px;
+  height:10px;
+  background:#fff;
+  clip-path:polygon(0 0,100% 0,64% 45%,64% 100%,36% 82%,36% 45%);
+}
+.filter-panel{
+  display:none;
+  position:absolute;
+  top:40px;
+  right:0;
+  width:320px;
+  min-height:92px;
+  padding:12px 14px 14px;
+  background:#fff;
+  border:1px solid #d7dce2;
+  border-radius:4px;
+  box-shadow:0 6px 18px rgba(0,0,0,.14);
+  z-index:40;
+}
+.filter-panel.open{display:block}
+.filter-panel-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:10px;
+  font-size:12px;
+  font-weight:600;
+  color:#303942;
+}
+.filter-panel-close{
+  border:0;
+  background:transparent;
+  padding:0;
+  width:22px;
+  height:22px;
+  font-size:20px;
+  line-height:20px;
+  color:#303942;
+  cursor:pointer;
+}
+.filter-chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+.filter-chip{
+  height:25px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:0 9px;
+  border-radius:14px;
+  background:#343434;
+  color:#fff;
+  font-size:11px;
+  white-space:nowrap;
+}
+.filter-chip-remove{
+  border:0;
+  background:transparent;
+  color:#fff;
+  padding:0;
+  width:12px;
+  height:12px;
+  line-height:10px;
+  font-size:15px;
+  cursor:pointer;
+}
+
+.filter-options{
+  margin:12px -14px -14px;
+  border-top:1px solid #d7dce2;
+}
+.filter-option{
+  min-height:34px;
+  padding:0 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  border-bottom:1px solid #e1e5ea;
+  background:#fff;
+  font-size:11px;
+  color:#3f4a55;
+  cursor:pointer;
+}
+.filter-option:last-child{border-bottom:0}
+.filter-option:hover{background:#f7f8fa}
+.filter-option input{
+  width:13px;
+  height:13px;
+  margin:0;
+  accent-color:#252b32;
+  cursor:pointer;
+}
+
+.filter-values{
+  display:none;
+  margin:8px -14px -14px;
+  background:#fafbfc;
+}
+.filter-values.show{display:block}
+.filter-values-title{
+  min-height:32px;
+  display:flex;
+  align-items:center;
+  padding:0 14px;
+  font-size:10px;
+  font-weight:600;
+  color:#697480;
+  text-transform:uppercase;
+  letter-spacing:.03em;
+  border-top:1px solid #d7dce2;
+  border-bottom:1px solid #e1e5ea;
+}
+.filter-value-option{
+  min-height:34px;
+  padding:0 14px 0 22px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  border-bottom:1px solid #e1e5ea;
+  background:#fff;
+  font-size:11px;
+  color:#3f4a55;
+  cursor:pointer;
+}
+.filter-value-option:last-child{border-bottom:0}
+.filter-value-option:hover{background:#f7f8fa}
+.filter-value-option input{
+  width:13px;
+  height:13px;
+  margin:0;
+  accent-color:#252b32;
+  cursor:pointer;
+}
+
+
+/* IO platform modal/button treatment */
+.modal{
+  border-radius:2px;
+  box-shadow:0 12px 32px rgba(0,0,0,.22);
+}
+.modal-header{
+  min-height:50px;
+  padding:0 16px;
+  display:flex;
+  align-items:center;
+  border-bottom:1px solid #d7dce2;
+}
+.modal-header h2{
+  font-size:15px;
+  font-weight:600;
+}
+.modal-body{padding:18px 16px}
+.modal-footer{
+  min-height:56px;
+  padding:12px 16px;
+  border-top:1px solid #d7dce2;
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+}
+.btn-primary{
+  background:#252b32;
+  border:1px solid #252b32;
+  color:#fff;
+  border-radius:3px;
+}
+.btn-primary:hover{background:#1c2127}
+.btn-primary:disabled{
+  background:#c9ced4;
+  border-color:#c9ced4;
+  color:#fff;
+}
+.btn-secondary{
+  background:#fff;
+  border:1px solid #bfc6ce;
+  color:#303942;
+  border-radius:3px;
+}
+
+
+.link-action.disabled{
+  color:#9aa3ad;
+  text-decoration:none;
+  cursor:default;
+  pointer-events:none;
+  opacity:.65;
+}
+
+
+.actions .btn-primary,
+.actions .btn-secondary{
+  min-height:30px;
+  padding:0 12px;
+}
+
+.admin-entry{
+  position:fixed; inset:0; z-index:1000;
+  background:#f4f5f6; color:#1f2730;
+  font-family:Arial,Helvetica,sans-serif;
+}
+.admin-entry .admin-top{
+  height:36px; background:#24262b; color:#fff;
+  display:flex; align-items:center; padding:0 12px;
+}
+.admin-entry .admin-brand{
+  font-size:20px; font-weight:700; letter-spacing:.01em;
+}
+.admin-entry .admin-avatar{
+  margin-left:auto; width:24px; height:24px; border-radius:50%;
+  background:#8f6c54; border:1px solid #d9c2b3;
+}
+.admin-entry .admin-side{
+  position:absolute; left:0; top:36px; bottom:0; width:31px;
+  background:#24262b; color:#fff; display:flex; flex-direction:column;
+  align-items:center; padding-top:12px; gap:17px; font-size:12px;
+}
+.admin-entry .admin-sep{width:26px;border-top:1px solid #6d7178;margin:2px 0}
+.admin-entry .admin-content{
+  position:absolute; left:31px; right:0; top:36px; bottom:0;
+  padding:14px 24px 28px;
+}
+.admin-entry .admin-crumb{font-size:9px;color:#4d5964;margin-bottom:18px}
+.admin-entry .admin-title{
+  font-size:16px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:7px
+}
+.admin-entry .admin-grid{
+  display:grid;
+  grid-template-columns:repeat(9,minmax(130px,1fr));
+  gap:12px;
+}
+.admin-entry .admin-card{
+  height:104px; background:#fff; border:1px solid #e0e3e6;
+  border-top:2px solid #30353b; border-radius:5px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:12px; font-size:11px; font-weight:600;
+  box-shadow:0 1px 2px rgba(0,0,0,.05);
+}
+.admin-entry button.admin-card{
+  font:inherit; color:inherit; cursor:pointer;
+}
+.admin-entry button.admin-card:hover{
+  background:#f9fafb; border-color:#c5cbd1;
+}
+.admin-entry .admin-icon{
+  width:31px;height:31px;border-radius:50%;background:#30353b;color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+}
+@media(max-width:1300px){
+  .admin-entry .admin-grid{grid-template-columns:repeat(5,minmax(130px,1fr))}
+}
+
+
+#createBtn,#cancelBtn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  visibility:visible;
+}
+
+
+.persistent-page-actions{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  z-index:45;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+}
+
+
+/* Filter popup · Front component */
+.filter-panel.filter-popup{
+  width:320px;
+  padding:14px;
+  min-height:0;
+}
+.filter-select-group{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  margin-top:10px;
+}
+.filter-select-label{
+  font-size:11px;
+  font-weight:600;
+  color:#3f4a55;
+}
+.filter-select{
+  width:100%;
+  height:32px;
+  border:1px solid #cfd5dc;
+  border-radius:2px;
+  background:#fff;
+  color:#303942;
+  padding:0 9px;
+  font:inherit;
+  font-size:11px;
+}
+.filter-popup-actions{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:16px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="admin-entry" id="adminEntry">
+  <div class="admin-top">
+    <div class="admin-brand">» ✣ SITRACK</div>
+    <div class="admin-avatar"></div>
+  </div>
+  <div class="admin-side">
+    <span>⌂</span><span>▦</span><span>↗</span><span>♟</span><span>≡</span><span>♟</span>
+    <div class="admin-sep"></div>
+    <span>⚙</span><span>◆</span><span>♣</span><span>&lt;/&gt;</span><span>♧</span><span>▣</span>
+    <div class="admin-sep"></div>
+    <span>⌘</span><span>⚑</span>
+  </div>
+  <div class="admin-content">
+    <div class="admin-crumb">Administration</div>
+    <div class="admin-title"><span>♣</span><span>Administration Modules</span></div>
+    <div class="admin-grid">
+      <div class="admin-card"><div class="admin-icon">●</div><span>Accounts</span></div>
+      <div class="admin-card"><div class="admin-icon">♣</div><span>Roles</span></div>
+      <div class="admin-card"><div class="admin-icon">◆</div><span>Things Administration</span></div>
+      <div class="admin-card"><div class="admin-icon">▣</div><span>Events</span></div>
+      <div class="admin-card"><div class="admin-icon">▦</div><span>Apps Administration</span></div>
+      <div class="admin-card"><div class="admin-icon">♧</div><span>CRUDs</span></div>
+      <div class="admin-card"><div class="admin-icon">◇</div><span>Dynamic Grants</span></div>
+      <div class="admin-card"><div class="admin-icon">♟</div><span>Rules</span></div>
+      <div class="admin-card"><div class="admin-icon">∞</div><span>Tiny URLs</span></div>
+
+      <button type="button" class="admin-card" id="openCorporateHandshakes">
+        <div class="admin-icon">☷</div><span>Corporate Handshakes</span>
+      </button>
+      <div class="admin-card"><div class="admin-icon">◐</div><span>Policies</span></div>
+      <div class="admin-card"><div class="admin-icon">●</div><span>API Keys</span></div>
+    </div>
+  </div>
+</div>
+
+<header class="navbar">
+  <div class="canary-brand">
+    <span class="canary-brand-mark">»</span>
+    <span class="canary-brand-mark">✣</span>
+    <span class="canary-brand-name" id="corporateBrandName">SITRACK</span>
+  </div>
+  <div class="canary-global-search">
+    <span class="canary-search-icon">⌕</span>
+    <span class="canary-search-placeholder">Search</span>
+  </div>
+  <div class="spacer"></div>
+  <div class="avatar">JP</div>
+</header>
+<aside class="sidebar">
+  <div class="side-item">⌂</div>
+  <div class="side-item">▦</div>
+  <div class="side-item">↗</div>
+  <div class="side-item">♟</div>
+  <div class="side-item">≡</div>
+  <div class="side-item">♟</div>
+  <div class="side-separator"></div>
+  <div class="side-item">⚙</div>
+  <div class="side-item">◆</div>
+  <div class="side-item active">♣</div>
+  <div class="side-item">&lt;/&gt;</div>
+  <div class="side-item">♧</div>
+  <div class="side-item">▣</div>
+  <div class="side-separator"></div>
+  <div class="side-item">⌘</div>
+  <div class="side-item">⚑</div>
+</aside>
+
+<div class="main">
+  <main class="content">
+    <div class="breadcrumb">BPM / Corporate Handshake</div>
+    <div class="page-title">□ Handshake</div>
+    <div class="tabs"><button class="tab active" id="originTab" type="button">Origin</button><button class="tab" id="destinationTab" type="button">Destination</button></div>
+    <div class="context" id="contextText">Share an event with a destination corporate</div>
+
+    <div class="section-header">
+      <div class="section-title" id="sectionTitle">Outgoing handshakes</div>
+      <div class="toolbar">
+        <div class="search-filter-component" id="searchFilterComponent">
+          <div class="search-filter-row">
+            <div class="platform-search"><input id="handshakeSearch" type="text" placeholder="Search"></div>
+            <button type="button" class="filter-toggle" id="filterToggle" aria-label="Open filters" aria-expanded="false">
+              <span class="filter-funnel" aria-hidden="true"></span>
+            </button>
+          </div>
+          <div class="filter-panel filter-popup" id="filterPanel" aria-hidden="true">
+            <div class="filter-panel-head">
+              <span>Filters</span>
+              <button type="button" class="filter-panel-close" id="filterPanelClose" aria-label="Close filters">×</button>
+            </div>
+
+            <div class="filter-select-group">
+              <label class="filter-select-label" id="corporateFilterLabel" for="corporateFilterSelect">Destination corporate</label>
+              <select class="filter-select" id="corporateFilterSelect">
+                <option value="">All</option>
+              </select>
+            </div>
+
+            <div class="filter-select-group">
+              <label class="filter-select-label" for="eventFilterSelect">Event</label>
+              <select class="filter-select" id="eventFilterSelect">
+                <option value="">All</option>
+              </select>
+            </div>
+
+            <div class="filter-select-group">
+              <label class="filter-select-label" for="statusFilterSelect">Status</label>
+              <select class="filter-select" id="statusFilterSelect">
+                <option value="">All</option>
+              </select>
+            </div>
+
+            <div class="filter-popup-actions">
+              <button type="button" class="btn-primary" id="applyFilters">Apply Filters</button>
+            </div>
+          </div>
+        </div>
+        
+        <button class="btn-primary" id="openCreate">+ New</button>
+      </div>
+    </div>
+
+    <div id="list" class="list">
+      <div id="emptyState" class="empty">
+        <strong>No handshake requests yet</strong>
+        Requests created by your corporate will appear here.
+      </div>
+    </div>
+
+    <div class="persistent-page-actions">
+      <button type="button" class="btn-primary" id="saveInterface">Save</button>
+      <button type="button" class="btn-secondary" id="cancelInterface">Cancel</button>
+    </div>
+
+    <div class="pagination" id="pagination">
+      <button class="page-btn" type="button" disabled>‹</button>
+      <button class="page-btn active" type="button">1</button>
+      <button class="page-btn" type="button">2</button>
+      <button class="page-btn" type="button">3</button>
+      <button class="page-btn" type="button">›</button>
+      <span class="page-info" id="pageInfo">0 handshakes · 10 per page</span>
+    </div>
+  </main>
+</div>
+
+<div class="backdrop" id="backdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="formModalTitle">Share event with destination</h2>
+      <button class="icon-btn" id="closeModal" aria-label="Close">×</button>
+    </div>
+    <form id="handshakeForm" novalidate>
+      <div class="modal-body">
+        <div class="field">
+          <label class="required" for="recipientInput">Destination corporate</label>
+          <div class="combo" id="recipientCombo">
+            <input id="recipientInput" class="combo-input" placeholder="Select corporate" autocomplete="off">
+            <button class="combo-arrow-btn" id="recipientArrow" type="button" aria-label="Open corporate options"></button>
+            <div class="combo-panel" id="recipientPanel"></div>
+          </div>
+          <div class="error-text" id="recipientError"></div>
+        </div>
+
+        <div class="field">
+          <label class="required" for="eventInput">Event</label>
+          <div class="combo" id="eventCombo">
+            <input id="eventInput" class="combo-input" placeholder="Select event" autocomplete="off">
+            <button class="combo-arrow-btn" id="eventArrow" type="button" aria-label="Open event options"></button>
+            <div class="combo-panel" id="eventPanel"></div>
+          </div>
+          <div class="error-text" id="eventError"></div>
+        </div>
+
+        <div class="field">
+          <label for="description">Description</label>
+          <textarea id="description" placeholder="Explain why this handshake is needed"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="submit" class="btn-primary" id="createBtn" disabled>Save</button>
+        <button type="button" class="btn-secondary" id="cancelBtn">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<div class="backdrop" id="detailBackdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Handshake details</h2>
+      <button class="icon-btn" id="closeDetail" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-grid">
+        <div class="detail-cell">
+          <span class="detail-label" id="detailCounterpartLabel">Destination corporate</span>
+          <div class="detail-value" id="detailRecipient">—</div>
+        </div>
+        <div class="detail-cell">
+          <span class="detail-label">Event</span>
+          <div class="detail-value" id="detailEvent">—</div>
+        </div>
+        <div class="detail-cell">
+          <span class="detail-label">Status</span>
+          <span class="badge badge-pending" id="detailStatus">Pending</span>
+        </div>
+        <div class="detail-cell" id="detailExpirationCell" style="display:none">
+          <span class="detail-label">Expiration date</span>
+          <div class="detail-value" id="detailExpiration">—</div>
+        </div>
+        <div class="detail-cell detail-full">
+          <span class="detail-label">Description</span>
+          <div class="detail-value" id="detailDescription">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="detail-actions" id="originDetailActions" style="margin-left:auto">
+        <button type="button" class="btn-secondary" id="cancelHandshake">Cancel</button>
+        <button type="button" class="btn-primary" id="okOriginDetail">OK</button>
+      </div>
+      <div class="destination-primary" id="destinationDetailActions" style="display:none">
+        <button type="button" class="btn-secondary" id="cancelPendingHandshake">Cancel</button>
+        <button type="button" class="btn-primary" id="approveHandshake">Approve</button>
+      </div>
+      <div class="destination-primary" id="destinationApprovedActions" style="display:none">
+        <button type="button" class="btn-secondary" id="cancelApprovedHandshake">Cancel</button>
+        <button type="button" class="btn-primary" onclick="closeDetail()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+<div class="backdrop" id="destinationCancelApprovedBackdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Cancel handshake</h2>
+      <button class="icon-btn" id="closeDestinationApprovedCancel" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-copy">Are you sure you want to cancel this handshake?</p>
+      <p class="warning-copy">The handshake will stop sharing the event and will remain visible in the list as Cancelled.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" onclick="document.getElementById('destinationCancelApprovedBackdrop').classList.remove('show')">Cancel</button>
+      <button type="button" class="btn-primary" id="confirmDestinationApprovedCancel">OK</button>
+    </div>
+  </div>
+</div>
+
+<div class="backdrop" id="originCancelBackdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Cancel handshake</h2>
+      <button class="icon-btn" id="closeOriginCancel" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-copy">Are you sure you want to cancel this handshake?</p>
+      <p class="warning-copy">The handshake will remain visible in the list as Cancelled and cannot be reactivated.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" onclick="document.getElementById('originCancelBackdrop').classList.remove('show')">Cancel</button>
+      <button type="button" class="btn-primary" id="confirmOriginCancel">OK</button>
+    </div>
+  </div>
+</div>
+
+<div class="backdrop" id="approveBackdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Approve handshake</h2>
+      <button class="icon-btn" id="closeApprove" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label class="required" for="expirationDate">Expiration date</label>
+        <input class="date-input" id="expirationDate" type="date">
+        <div class="error-text" id="expirationError"></div>
+      </div>
+      <p class="warning-copy">The handshake will remain active until this date. The expiration date cannot be edited after approval.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-primary" id="confirmApprove" disabled>Save</button>
+      <button type="button" class="btn-secondary" id="cancelApprove">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="backdrop" id="cancelPendingBackdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Cancel handshake</h2>
+      <button class="icon-btn" id="closeCancelPending" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-copy">Are you sure you want to cancel this handshake request?</p>
+      <p class="warning-copy">The request will remain visible in the list as Cancelled and cannot be reactivated.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" onclick="document.getElementById('cancelPendingBackdrop').classList.remove('show')">Cancel</button>
+      <button type="button" class="btn-primary" id="confirmCancelPending">OK</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <div class="toast-title" id="toastTitle"></div>
+  <div class="toast-msg" id="toastMsg"></div>
+</div>
+
+<script>
+const recipientData = [
+  {value:"LIME", title:"LIME", sub:"corporate-b@sitrack.com", tag:"CORPORATE"},
+  {value:"Corporate C", title:"Corporate C", sub:"corporate-c@sitrack.com", tag:"CORPORATE"},
+  {value:"My corporate", title:"My corporate", sub:"origin@sitrack.com", tag:"CORPORATE", self:true}
+];
+const eventData = [
+  {value:"ServiceCreated", title:"ServiceCreated", sub:"Origin catalog event", tag:"EVENT"},
+  {value:"ServiceCompleted", title:"ServiceCompleted", sub:"Origin catalog event", tag:"EVENT"},
+  {value:"SessionStarted", title:"SessionStarted", sub:"Origin catalog event", tag:"EVENT"},
+  {value:"Unavailable event", title:"Unavailable event", sub:"Not available for selection", tag:"EVENT", unavailable:true}
+];
+
+const backdrop=document.getElementById('backdrop');
+const form=document.getElementById('handshakeForm');
+const list=document.getElementById('list');
+const emptyState=document.getElementById('emptyState');
+const createBtn=document.getElementById('createBtn');
+const formModalTitle=document.getElementById('formModalTitle');
+
+const recipientInput=document.getElementById('recipientInput');
+const recipientPanel=document.getElementById('recipientPanel');
+const recipientCombo=document.getElementById('recipientCombo');
+const recipientError=document.getElementById('recipientError');
+const recipientArrow=document.getElementById('recipientArrow');
+
+const eventInput=document.getElementById('eventInput');
+const eventPanel=document.getElementById('eventPanel');
+const eventCombo=document.getElementById('eventCombo');
+const eventError=document.getElementById('eventError');
+const eventArrow=document.getElementById('eventArrow');
+
+const description=document.getElementById('description');
+let selectedRecipient=null;
+let selectedEvent=null;
+const existingPairs=new Set();
+let handshakeCount=0;
+let currentDetail=null;
+let originHandshakeData=null;
+let handshakeRecords=[];
+
+let currentView='origin';
+const corporateBrandName=document.getElementById('corporateBrandName');
+const corporateNavbar=document.querySelector('.navbar');
+const corporateSidebar=document.querySelector('.sidebar');
+
+let destinationHandshake={
+  recipient:'LIME',
+  event:'ServiceCreated',
+  description:'Allow recipient processes to react to this event.',
+  origin:'Sitrack',
+  
+  
+  
+  
+  status:'Pending',
+  expiration:''
+};
+
+const detailBackdrop=document.getElementById('detailBackdrop');
+const detailRecipient=document.getElementById('detailRecipient');
+const detailCounterpartLabel=document.getElementById('detailCounterpartLabel');
+const detailEvent=document.getElementById('detailEvent');
+const detailDescription=document.getElementById('detailDescription');
+
+const detailStatus=document.getElementById('detailStatus');
+const detailExpiration=document.getElementById('detailExpiration');
+const detailExpirationCell=document.getElementById('detailExpirationCell');
+const originTab=document.getElementById('originTab');
+const destinationTab=document.getElementById('destinationTab');
+const contextText=document.getElementById('contextText');
+const sectionTitle=document.getElementById('sectionTitle');
+const openCreate=document.getElementById('openCreate');
+const avatarEl=document.querySelector('.avatar');
+const originDetailActions=document.getElementById('originDetailActions');
+const destinationDetailActions=document.getElementById('destinationDetailActions');
+const destinationApprovedActions=document.getElementById('destinationApprovedActions');
+
+
+
+function updateEmptyPagination(){
+  const pagination=document.getElementById('pagination');
+  if(!pagination) return;
+  const hasRows=!!list.querySelector('.list-item');
+  pagination.style.display=hasRows ? 'flex' : 'none';
+}
+
+function updatePagination(){
+  document.getElementById('pageInfo').textContent = `${handshakeCount} handshakes · 10 per page`;
+  updateEmptyPagination();
+}
+function openDetail(data){
+  currentDetail=data;
+  if(currentView==='destination'){
+    detailCounterpartLabel.textContent='Origin corporate';
+    detailRecipient.textContent=data.origin || 'Sitrack';
+  }else{
+    detailCounterpartLabel.textContent='Destination corporate';
+    detailRecipient.textContent=data.recipient || 'LIME';
+  }
+  detailEvent.textContent=data.event;
+  detailDescription.textContent=data.description || '—';
+
+  const status=data.status || 'Pending';
+  detailStatus.textContent=status;
+  detailStatus.className='badge ' + (
+    status==='Approved' ? 'badge-approved' :
+    status==='Cancelled' ? 'badge-cancelled' : 'badge-pending'
+  );
+
+  if(status==='Approved' && data.expiration){
+    detailExpirationCell.style.display='';
+    detailExpiration.textContent=data.expiration;
+  }else{
+    detailExpirationCell.style.display='none';
+    detailExpiration.textContent='—';
+  }
+
+  if(currentView==='destination'){
+    originDetailActions.style.display='none';
+    destinationDetailActions.style.display = status==='Pending' ? 'flex' : 'none';
+    destinationApprovedActions.style.display = status==='Approved' ? 'flex' : 'none';
+  }else{
+    originDetailActions.style.display = (status==='Pending' || status==='Approved') ? 'flex' : 'none';
+    destinationDetailActions.style.display='none';
+    destinationApprovedActions.style.display='none';
+  }
+  detailBackdrop.classList.add('show');
+}
+function closeDetail(){ detailBackdrop.classList.remove('show'); }
+document.getElementById('closeDetail').onclick=closeDetail;
+document.getElementById('okOriginDetail').onclick=closeDetail;
+detailBackdrop.onclick=(e)=>{ if(e.target===detailBackdrop) closeDetail(); };
+
+document.getElementById('cancelHandshake').onclick=()=>{
+  if(!currentDetail) return;
+  closeDetail();
+  originCancelBackdrop.classList.add('show');
+};
+
+
+
+function renderDestinationList(){
+  list.innerHTML='';
+
+  const records=handshakeRecords.length
+    ? handshakeRecords
+    : (destinationHandshake ? [destinationHandshake] : []);
+
+  if(!records.length){
+    list.innerHTML='<div class="empty"><strong>No incoming handshakes yet</strong>When Origin shares an event with your corporate, the request will appear here.</div>';
+    const pagination=document.getElementById('pagination');
+    if(pagination) pagination.style.display='none';
+    return;
+  }
+
+  records.slice().reverse().forEach(h=>{
+    const visualStatus=h.status || 'Pending';
+    const item=document.createElement('article');
+    item.className='list-item';
+    item.dataset.search=`${h.origin} ${h.event} ${visualStatus}`.toLowerCase();
+
+    item.innerHTML=`
+      <div><span class="meta-label">Origin corporate</span><div class="meta-value">${h.origin}</div></div>
+      <div><span class="meta-label">Event</span><div class="meta-value">${h.event}</div></div>
+      <div><span class="meta-label">Description</span><div class="meta-value">${h.description || '—'}</div></div>
+      <div><span class="meta-label">Expiration</span><div class="meta-value">${h.expiration || '—'}</div></div>
+      <div><span class="meta-label">Status</span><span class="badge ${
+        visualStatus==='Approved' ? 'badge-approved' :
+        visualStatus==='Cancelled' ? 'badge-cancelled' : 'badge-pending'
+      }">${visualStatus}</span></div>
+      <div class="actions">${
+        h.status==='Pending'
+          ? '<button type="button" class="btn-secondary destination-row-cancel">Cancel</button><button type="button" class="btn-primary destination-row-approve">Approve</button>'
+          : h.status==='Approved'
+            ? '<button type="button" class="btn-secondary destination-row-cancel-approved">Cancel</button>'
+            : ''
+      }</div>
+    `;
+
+    const cancelPending=item.querySelector('.destination-row-cancel');
+    if(cancelPending){
+      cancelPending.addEventListener('click',()=>{
+        destinationHandshake=h;
+        cancelPendingBackdrop.classList.add('show');
+      });
+    }
+
+    const approve=item.querySelector('.destination-row-approve');
+    if(approve){
+      approve.addEventListener('click',()=>{
+        destinationHandshake=h;
+        expirationDate.value=new Date().toISOString().slice(0,10);
+        expirationError.textContent='';
+        expirationDate.classList.remove('error');
+        confirmApprove.disabled=false;
+        approveBackdrop.classList.add('show');
+      });
+    }
+
+    const cancelApproved=item.querySelector('.destination-row-cancel-approved');
+    if(cancelApproved){
+      cancelApproved.addEventListener('click',()=>{
+        destinationHandshake=h;
+        destinationCancelApprovedBackdrop.classList.add('show');
+      });
+    }
+
+    list.appendChild(item);
+  });
+
+  document.getElementById('pageInfo').textContent=`${records.length} handshakes · 10 per page`;
+  const pagination=document.getElementById('pagination');
+  if(pagination) pagination.style.display='flex';
+  applyHandshakeSearch();
+}
+
+function switchView(view){
+  currentView=view;
+  activeFilterKeys=[];
+  selectedFilterValues={status:[],corporate:[],event:[]};
+  activeFilterValueKey=null;
+  renderFilterComponent();
+  closeFilterPanel();
+  originTab.classList.toggle('active',view==='origin');
+  destinationTab.classList.toggle('active',view==='destination');
+
+  if(view==='destination'){
+    if(corporateBrandName) corporateBrandName.textContent='LIME';
+    if(corporateNavbar) corporateNavbar.classList.add('destination-corporate');
+    if(corporateSidebar) corporateSidebar.classList.add('destination-corporate');
+    if(avatarEl) avatarEl.textContent='PG';
+    contextText.textContent='Incoming event sharing requests';
+    sectionTitle.textContent='Incoming handshakes';
+    openCreate.style.display='none';
+    renderDestinationList();
+    renderFilterComponent();
+    applyHandshakeSearch();
+  }else{
+    if(corporateBrandName) corporateBrandName.textContent='SITRACK';
+    if(corporateNavbar) corporateNavbar.classList.remove('destination-corporate');
+    if(corporateSidebar) corporateSidebar.classList.remove('destination-corporate');
+    if(avatarEl) avatarEl.textContent='JP';
+    contextText.textContent='Share an event with a destination corporate';
+    sectionTitle.textContent='Outgoing handshakes';
+    openCreate.style.display='';
+    renderOriginList();
+    renderFilterComponent();
+    applyHandshakeSearch();
+  }
+}
+originTab.addEventListener('click',()=>switchView('origin'));
+destinationTab.addEventListener('click',()=>switchView('destination'));
+
+
+
+const handshakeSearch=document.getElementById('handshakeSearch');
+
+
+function showSearchEmptyState(){
+  let state=document.getElementById('searchEmptyState');
+  if(!state){
+    state=document.createElement('div');
+    state.id='searchEmptyState';
+    state.className='empty';
+    state.innerHTML='<strong>No handshakes found</strong>Try another search or adjust the filters.';
+    list.appendChild(state);
+  }
+}
+function hideSearchEmptyState(){
+  const state=document.getElementById('searchEmptyState');
+  if(state) state.remove();
+}
+
+const filterToggle=document.getElementById('filterToggle');
+const filterPanel=document.getElementById('filterPanel');
+const filterPanelClose=document.getElementById('filterPanelClose');
+const corporateFilterLabel=document.getElementById('corporateFilterLabel');
+const corporateFilterSelect=document.getElementById('corporateFilterSelect');
+const eventFilterSelect=document.getElementById('eventFilterSelect');
+const statusFilterSelect=document.getElementById('statusFilterSelect');
+const applyFilters=document.getElementById('applyFilters');
+
+let activeFilterKeys=[];
+let selectedFilterValues={
+  status:[],
+  corporate:[],
+  event:[]
+};
+let activeFilterValueKey=null;
+
+function currentFilterLabels(){
+  return currentView==='destination'
+    ? {status:'Status',corporate:'Origin corporate',event:'Event'}
+    : {status:'Status',corporate:'Destination corporate',event:'Event'};
+}
+
+function collectFilterValues(){
+  const values={status:new Set(),corporate:new Set(),event:new Set()};
+
+  // Options available by filter category.
+  ['Pending','Approved','Cancelled'].forEach(value=>values.status.add(value));
+
+  const corporateOptions=currentView==='destination'
+    ? ['SITRACK','Corporate C']
+    : ['LIME','Corporate C'];
+  corporateOptions.forEach(value=>values.corporate.add(value));
+
+  ['ServiceCreated','ServiceCompleted','SessionStarted'].forEach(value=>values.event.add(value));
+
+  // Keep any values already present in the current List.
+  [...list.querySelectorAll('.list-item')].forEach(item=>{
+    const labels=[...item.querySelectorAll('.meta-label')];
+
+    const read=(labelText)=>{
+      const label=labels.find(el=>(el.textContent||'').trim().toLowerCase()===labelText);
+      if(!label) return '';
+      const parent=label.parentElement;
+      const value=(parent?.querySelector('.meta-value')?.textContent||'').trim();
+      const badge=(parent?.querySelector('.badge')?.textContent||'').trim();
+      return (badge || value).trim();
+    };
+
+    const corporateLabel=currentView==='destination' ? 'origin corporate' : 'destination corporate';
+    const status=read('status');
+    const corporate=read(corporateLabel);
+    const event=read('event');
+
+    if(status) values.status.add(status);
+    if(corporate) values.corporate.add(corporate);
+    if(event) values.event.add(event);
+  });
+
+  return {
+    status:[...values.status],
+    corporate:[...values.corporate],
+    event:[...values.event]
+  };
+}
+
+function fillFilterSelect(select,values,currentValue){
+  if(!select) return;
+  select.innerHTML='<option value="">All</option>' +
+    values.map(value=>`<option value="${value.replace(/"/g,'&quot;')}">${value}</option>`).join('');
+  select.value=currentValue || '';
+}
+
+function renderFilterComponent(){
+  const labels=currentFilterLabels();
+  const values=collectFilterValues();
+
+  if(corporateFilterLabel) corporateFilterLabel.textContent=labels.corporate;
+
+  fillFilterSelect(
+    corporateFilterSelect,
+    values.corporate,
+    selectedFilterValues.corporate[0] || ''
+  );
+  fillFilterSelect(
+    eventFilterSelect,
+    values.event,
+    selectedFilterValues.event[0] || ''
+  );
+  fillFilterSelect(
+    statusFilterSelect,
+    values.status,
+    selectedFilterValues.status[0] || ''
+  );
+}
+
+function openFilterPanel(){
+  if(!filterPanel || !filterToggle) return;
+  renderFilterComponent();
+  filterPanel.classList.add('open');
+  filterPanel.setAttribute('aria-hidden','false');
+  filterToggle.setAttribute('aria-expanded','true');
+}
+
+function closeFilterPanel(){
+  if(!filterPanel || !filterToggle) return;
+  filterPanel.classList.remove('open');
+  filterPanel.setAttribute('aria-hidden','true');
+  filterToggle.setAttribute('aria-expanded','false');
+}
+
+if(filterToggle){
+  filterToggle.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    filterPanel.classList.contains('open') ? closeFilterPanel() : openFilterPanel();
+  });
+}
+
+if(filterPanelClose) filterPanelClose.addEventListener('click',closeFilterPanel);
+
+if(applyFilters){
+  applyFilters.addEventListener('click',()=>{
+    selectedFilterValues.corporate=corporateFilterSelect && corporateFilterSelect.value
+      ? [corporateFilterSelect.value] : [];
+    selectedFilterValues.event=eventFilterSelect && eventFilterSelect.value
+      ? [eventFilterSelect.value] : [];
+    selectedFilterValues.status=statusFilterSelect && statusFilterSelect.value
+      ? [statusFilterSelect.value] : [];
+
+    activeFilterKeys=['corporate','event','status'].filter(
+      key=>selectedFilterValues[key].length
+    );
+
+    applyHandshakeSearch();
+    closeFilterPanel();
+  });
+}
+
+if(filterPanel) filterPanel.addEventListener('click',(e)=>e.stopPropagation());
+document.addEventListener('click',closeFilterPanel);
+renderFilterComponent();
+
+function applyHandshakeSearch(){
+  if(!handshakeSearch) return;
+
+  const q=handshakeSearch.value.trim().toLowerCase();
+  const items=[...list.querySelectorAll('.list-item')];
+  let visible=0;
+
+  items.forEach(item=>{
+    const labels=[...item.querySelectorAll('.meta-label')];
+
+    const read=(labelText)=>{
+      const label=labels.find(el=>(el.textContent||'').trim().toLowerCase()===labelText);
+      if(!label) return '';
+      const parent=label.parentElement;
+      const value=(parent?.querySelector('.meta-value')?.textContent||'').trim();
+      const badge=(parent?.querySelector('.badge')?.textContent||'').trim();
+      return (badge || value).trim();
+    };
+
+    const values={
+      corporate:read(currentView==='destination'?'origin corporate':'destination corporate'),
+      event:read('event'),
+      description:read('description'),
+      status:read('status')
+    };
+
+    // Filters resolve structured conditions such as Status, Corporate and Event.
+    const matchesSelectedValues=['status','corporate','event'].every(key=>{
+      const selected=selectedFilterValues[key];
+      return !selected.length || selected.includes(values[key]);
+    });
+
+    // Search is free text and intentionally searches only identifying content.
+    const searchText=[
+      values.corporate,
+      values.event,
+      values.description
+    ].join(' ').toLowerCase();
+
+    const matchesSearch=!q || searchText.includes(q);
+    const match=matchesSelectedValues && matchesSearch;
+
+    item.style.display=match ? '' : 'none';
+    if(match) visible++;
+  });
+
+  hideSearchEmptyState();
+
+  const hasActiveFilters=Object.values(selectedFilterValues).some(arr=>arr.length>0);
+  if((q || hasActiveFilters) && items.length && visible===0){
+    showSearchEmptyState();
+  }
+
+  const pagination=document.getElementById('pagination');
+  if(pagination){
+    const filtering=!!q || hasActiveFilters;
+    pagination.style.display=(!filtering && items.length) ? 'flex' : 'none';
+  }
+}
+
+if(handshakeSearch){
+  handshakeSearch.addEventListener('input',applyHandshakeSearch);
+  handshakeSearch.addEventListener('keydown',(e)=>{
+    if(e.key==='Enter') applyHandshakeSearch();
+  });
+}
+
+function showToast(type,title,msg){
+  const t=document.getElementById('toast');
+  t.className='toast show '+type;
+  document.getElementById('toastTitle').textContent=title;
+  document.getElementById('toastMsg').textContent=msg;
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
+}
+function resetModal(){
+  form.reset();
+  if(formModalTitle) formModalTitle.textContent='Share event with destination';
+  selectedRecipient=null;
+  selectedEvent=null;
+  recipientInput.value='';
+  eventInput.value='';
+  recipientInput.disabled=false;
+  eventInput.disabled=false;
+  createBtn.textContent='Save';
+  recipientError.textContent='';
+  eventError.textContent='';
+  recipientInput.classList.remove('error');
+  eventInput.classList.remove('error');
+  recipientCombo.classList.remove('open');
+  eventCombo.classList.remove('open');
+  recipientPanel.dataset.forceOpen='';
+  eventPanel.dataset.forceOpen='';
+  createBtn.disabled=true;
+}
+function openModal(){ resetModal(); backdrop.classList.add('show'); }
+function closeModal(){ 
+  backdrop.classList.remove('show'); 
+  if(formModalTitle) formModalTitle.textContent='Share event with destination';
+}
+
+function updateCreateState(){
+  createBtn.disabled = !(selectedRecipient && selectedEvent);
+}
+function renderOptions(data, query, panel, combo, onSelect, kind){
+  const q = query.trim().toLowerCase();
+  const results = data.filter(item => item.title.toLowerCase().includes(q));
+  panel.innerHTML = '';
+  // Empty query is allowed when the arrow opens the dropdown: show all options.
+  if(!q && !panel.dataset.forceOpen){ combo.classList.remove('open'); return; }
+  if(!results.length){
+    panel.innerHTML = '<div class="option"><div class="option-main"><div class="option-title">No results found</div></div></div>';
+    combo.classList.add('open');
+    return;
+  }
+  results.forEach(item=>{
+    const row = document.createElement('div');
+    row.className='option';
+    row.innerHTML = `<div class="option-main"><div class="option-title">${item.title}</div><div class="option-sub">${item.sub}</div></div>`;
+    row.addEventListener('click', ()=>{
+      onSelect(item);
+      combo.classList.remove('open');
+    });
+    panel.appendChild(row);
+  });
+  combo.classList.add('open');
+}
+
+recipientInput.addEventListener('input', ()=>{
+  recipientPanel.dataset.forceOpen='';
+  selectedRecipient=null;
+  updateCreateState();
+  recipientError.textContent='';
+  recipientInput.classList.remove('error');
+  renderOptions(recipientData, recipientInput.value, recipientPanel, recipientCombo, (item)=>{
+    selectedRecipient=item;
+    recipientInput.value=item.title;
+    recipientError.textContent='';
+    recipientInput.classList.remove('error');
+    updateCreateState();
+  }, 'recipient');
+});
+
+eventInput.addEventListener('input', ()=>{
+  eventPanel.dataset.forceOpen='';
+  selectedEvent=null;
+  updateCreateState();
+  eventError.textContent='';
+  eventInput.classList.remove('error');
+  renderOptions(eventData, eventInput.value, eventPanel, eventCombo, (item)=>{
+    selectedEvent=item;
+    eventInput.value=item.title;
+    eventError.textContent='';
+    eventInput.classList.remove('error');
+    updateCreateState();
+  }, 'event');
+});
+
+
+if(recipientArrow){
+  recipientArrow.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    recipientPanel.dataset.forceOpen='1';
+    renderOptions(recipientData, recipientInput.value, recipientPanel, recipientCombo, (item)=>{
+      selectedRecipient=item;
+      recipientInput.value=item.title;
+      recipientPanel.dataset.forceOpen='';
+      recipientError.textContent='';
+      recipientInput.classList.remove('error');
+      updateCreateState();
+    }, 'recipient');
+  });
+}
+if(eventArrow){
+  eventArrow.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    eventPanel.dataset.forceOpen='1';
+    renderOptions(eventData, eventInput.value, eventPanel, eventCombo, (item)=>{
+      selectedEvent=item;
+      eventInput.value=item.title;
+      eventPanel.dataset.forceOpen='';
+      eventError.textContent='';
+      eventInput.classList.remove('error');
+      updateCreateState();
+    }, 'event');
+  });
+}
+
+document.addEventListener('click', (e)=>{
+  if(!recipientCombo.contains(e.target)) recipientCombo.classList.remove('open');
+  if(!eventCombo.contains(e.target)) eventCombo.classList.remove('open');
+});
+openCreate.onclick=openModal;
+document.getElementById('closeModal').onclick=closeModal;
+document.getElementById('cancelBtn').onclick=closeModal;
+backdrop.onclick=(e)=>{ if(e.target===backdrop) closeModal(); };
+
+
+function renderOriginList(){
+  if(!handshakeRecords.length){
+    list.innerHTML='<div id="emptyState" class="empty"><strong>No outgoing handshakes yet</strong>When you share an event with a destination corporate, the request will appear here.</div>';
+    handshakeCount=0;
+    updatePagination();
+    return;
+  }
+
+  list.innerHTML='';
+
+  handshakeRecords.slice().reverse().forEach(data=>{
+    const visualStatus=data.status || 'Pending';
+    const item=document.createElement('article');
+    item.className='list-item';
+    data._item=item;
+    item.dataset.search=`${data.recipient} ${data.event} ${visualStatus}`.toLowerCase();
+
+    item.innerHTML=`
+      <div><span class="meta-label">Destination corporate</span><div class="meta-value" data-field="corporate">${data.recipient}</div></div>
+      <div><span class="meta-label">Event</span><div class="meta-value" data-field="event">${data.event}</div></div>
+      <div><span class="meta-label">Description</span><div class="meta-value" data-field="description">${data.description || '—'}</div></div>
+      <div><span class="meta-label">Expiration</span><div class="meta-value" data-field="expiration">${data.expiration || '—'}</div></div>
+      <div><span class="meta-label">Status</span><span class="badge ${
+        visualStatus==='Approved' ? 'badge-approved' :
+        visualStatus==='Cancelled' ? 'badge-cancelled' : 'badge-pending'
+      }" data-field="status">${visualStatus}</span></div>
+      <div class="actions">${
+        (data.status==='Pending' || data.status==='Approved')
+          ? '<button type="button" class="btn-secondary origin-row-cancel">Cancel</button>'
+          : ''
+      }</div>
+    `;
+
+    const action=item.querySelector('.origin-row-cancel');
+    if(action){
+      action.addEventListener('click',()=>{
+        currentDetail=data;
+        destinationHandshake=data;
+        originCancelBackdrop.classList.add('show');
+      });
+    }
+    list.appendChild(item);
+  });
+
+  handshakeCount=handshakeRecords.length;
+  updatePagination();
+  applyHandshakeSearch();
+}
+
+function refreshOriginListItem(data){
+  if(data) originHandshakeData=data;
+  if(currentView==='origin') renderOriginList();
+}
+function createListItem(recipientName,eventName,desc){
+  const data={
+    recipient:recipientName,
+    event:eventName,
+    description:desc||'',
+    origin:'Sitrack',
+    status:'Pending',
+    expiration:''
+  };
+
+  handshakeRecords.push(data);
+  originHandshakeData=data;
+  destinationHandshake=data;
+  handshakeCount=handshakeRecords.length;
+
+  renderOriginList();
+}
+
+
+
+const originCancelBackdrop=document.getElementById('originCancelBackdrop');
+
+document.getElementById('closeOriginCancel').onclick=()=>originCancelBackdrop.classList.remove('show');
+originCancelBackdrop.onclick=(e)=>{if(e.target===originCancelBackdrop) originCancelBackdrop.classList.remove('show');};
+
+document.getElementById('confirmOriginCancel').onclick=async ()=>{
+  if(!currentDetail) return;
+  const btn=document.getElementById('confirmOriginCancel');
+  btn.disabled=true;
+  btn.textContent='Cancelling...';
+  await new Promise(r=>setTimeout(r,650));
+  currentDetail.status='Cancelled';
+  originHandshakeData=currentDetail;
+  destinationHandshake=currentDetail;
+  refreshOriginListItem(currentDetail);
+  originCancelBackdrop.classList.remove('show');
+  btn.disabled=false;
+  btn.textContent='Cancel handshake';
+  showToast('success','Handshake cancelled','The handshake remains visible in the list as Cancelled.');
+};
+
+const approveBackdrop=document.getElementById('approveBackdrop');
+const cancelPendingBackdrop=document.getElementById('cancelPendingBackdrop');
+const expirationDate=document.getElementById('expirationDate');
+const expirationError=document.getElementById('expirationError');
+const confirmApprove=document.getElementById('confirmApprove');
+
+
+document.getElementById('cancelPendingHandshake').onclick=()=>{
+  closeDetail();
+  cancelPendingBackdrop.classList.add('show');
+};
+
+document.getElementById('closeCancelPending').onclick=()=>{
+  cancelPendingBackdrop.classList.remove('show');
+};
+
+cancelPendingBackdrop.onclick=(e)=>{
+  if(e.target===cancelPendingBackdrop){
+    cancelPendingBackdrop.classList.remove('show');
+  }
+};
+
+document.getElementById('confirmCancelPending').onclick=()=>{
+  destinationHandshake.status='Cancelled';
+  originHandshakeData=destinationHandshake;
+  cancelPendingBackdrop.classList.remove('show');
+  renderDestinationList();
+  showToast(
+    'success',
+    'Handshake cancelled',
+    'The request remains visible in the list as Cancelled.'
+  );
+};
+
+document.getElementById('approveHandshake').onclick=()=>{
+  closeDetail();
+  expirationDate.value='';
+  expirationError.textContent='';
+  expirationDate.classList.remove('error');
+  confirmApprove.disabled=true;
+  approveBackdrop.classList.add('show');
+};
+document.getElementById('closeApprove').onclick=()=>approveBackdrop.classList.remove('show');
+document.getElementById('cancelApprove').onclick=()=>approveBackdrop.classList.remove('show');
+approveBackdrop.onclick=(e)=>{if(e.target===approveBackdrop) approveBackdrop.classList.remove('show');};
+
+expirationDate.addEventListener('input',()=>{
+  expirationError.textContent='';
+  expirationDate.classList.remove('error');
+  confirmApprove.disabled=!expirationDate.value;
+});
+
+confirmApprove.onclick=async ()=>{
+  if(!expirationDate.value){
+    expirationDate.classList.add('error');
+    expirationError.textContent='Expiration date is required.';
+    return;
+  }
+  const selected=new Date(expirationDate.value+'T23:59:59');
+  const now=new Date();
+  if(selected<=now){
+    expirationDate.classList.add('error');
+    expirationError.textContent='Expiration date must be in the future.';
+    return;
+  }
+  confirmApprove.disabled=true;
+  destinationHandshake.status='Approved';
+  destinationHandshake.expiration=expirationDate.value;
+  originHandshakeData=destinationHandshake;
+  approveBackdrop.classList.remove('show');
+  confirmApprove.disabled=false;
+  renderDestinationList();
+  showToast('success','Handshake approved',`Active until ${destinationHandshake.expiration}.`);
+};
+
+
+document.getElementById('closeDestinationApprovedCancel').onclick=()=>{
+  destinationCancelApprovedBackdrop.classList.remove('show');
+};
+
+destinationCancelApprovedBackdrop.onclick=(e)=>{
+  if(e.target===destinationCancelApprovedBackdrop){
+    destinationCancelApprovedBackdrop.classList.remove('show');
+  }
+};
+
+document.getElementById('confirmDestinationApprovedCancel').onclick=()=>{
+  destinationHandshake.status='Cancelled';
+  originHandshakeData=destinationHandshake;
+  destinationCancelApprovedBackdrop.classList.remove('show');
+  renderDestinationList();
+  showToast('success','Handshake cancelled','The handshake remains visible in the list as Cancelled.');
+};
+
+form.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  recipientError.textContent='';
+  eventError.textContent='';
+  recipientInput.classList.remove('error');
+  eventInput.classList.remove('error');
+
+  if(!selectedRecipient){
+    recipientInput.classList.add('error');
+    recipientError.textContent='Destination corporate is required.';
+    return;
+  }
+  if(!selectedEvent){
+    eventInput.classList.add('error');
+    eventError.textContent='Event is required.';
+    return;
+  }
+  if(selectedRecipient.self){
+    recipientInput.classList.add('error');
+    recipientError.textContent='You cannot select your own corporate.';
+    return;
+  }
+  if(selectedEvent.unavailable){
+    closeModal();
+    showToast('error','Handshake not created','The selected event is not available.');
+    return;
+  }
+
+  const newKey = selectedRecipient.value + '::' + selectedEvent.value;
+
+
+  if(existingPairs.has(newKey)){
+    closeModal();
+    showToast('error','Handshake not created','A handshake already exists for this event and recipient.');
+    return;
+  }
+
+  createBtn.disabled=true;
+  createBtn.textContent='Save';
+
+  const recipientValue=selectedRecipient.value;
+  const eventValue=selectedEvent.value;
+  const descriptionValue=description.value;
+
+  existingPairs.add(newKey);
+
+  // Base interaction: once created, close the modal and show the new Pending handshake in the Origin List.
+  closeModal();
+
+  if(handshakeSearch) handshakeSearch.value='';
+  createListItem(recipientValue, eventValue, descriptionValue);
+
+  createBtn.textContent='Save';
+  showToast('success','Handshake request created','Waiting for destination approval.');
+});
+
+updateEmptyPagination();
+
+const adminEntry=document.getElementById('adminEntry');
+const openCorporateHandshakes=document.getElementById('openCorporateHandshakes');
+if(openCorporateHandshakes){
+  openCorporateHandshakes.addEventListener('click',()=>{
+    adminEntry.style.display='none';
+  });
+}
+
+</script>
+</body>
+</html>
